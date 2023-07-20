@@ -1,63 +1,49 @@
-/*********
-  - ESP-WROOM-32 Bluetooth and WIFI Dual Core CPU with Low Power Consumption
-    https://www.aliexpress.com/item/32864722159.html?spm=a2g0s.9042311.0.0.7ac14c4dv0nB1k
-  - SN65HVD230 CAN bus transceiver
-    https://www.aliexpress.com/item/32686393467.html?spm=a2g0s.9042311.0.0.7ac14c4dv0nB1k
-   
-  by © SEKOM.com - Dr. András Szép 2020 using open source libraries v1.0
-==================================================================================
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
-Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
-OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-===================================================================================
-
-  
-  CAN bus connections TX2 - GPIO17
-                      RX2 - GPIO16 
-
-  LED 5 on when WIFI is ON
-  PIN 19 is the SWITCH to turn ON/OFF WiFi.
-               
- 
-********/
-#ifndef CONFIG_H
-#define CONFIG_H
-
-/*
- *
- * Note: default MSS for ESPAsyncTCP is 536 byte and defualt ACK timeout is 5s.
+#include "N2kMessages.h"
+/* 
+by Dr.András Szép under GNU General Public License (GPL).
 */
+#define DEBUG       //additional print of all data on serial
+//#define STOREWIFI   // store wifi credentials on the SPIFFS
+#define READWIFI    // get Wifi credentials from SPIFFS
+#define ENVSENSOR       //environmental sensors connected
 
-// Replace with your network credentials 
-const char* ssid = "your_ssid";  // Enter SSID here
-const char* passworterminald = "your_password";  //Enter Password here
-#define MYSSID "your_ssid"
-#define MYPASSWORD "your_password"
-#define SERVER_HOST_NAME "your_ip (numeric)"
-#define TCP_PORT 2222
-#define DNS_PORT 53
+#define OTAPORT 8080    //OTA port  - if defined it means we can access the OTA interface to update files on the SPIFFs
+const char*   servername  = "nmea";     //nDNS servername - http://servername.local
+#define UDPPort 10110 // 10110 is the default NMEA0183 port# if defined it means we listen to the NMEA0183 messages broadcasted on this port
+const char* ntpServer = "europe.pool.ntp.org";
+const int timeZone = 0;  // Your time zone in hours
+String  UTC ="2023-07-11 20:30:00";
+#define TIMEPERIOD 60.0
 
+#define MAX_NMEA0183_MSG_BUF_LEN 4096
+#define MAX_NMEA_FIELDS  64
+/*
+#ifdef ENVSENSOR
+#define SDA_PIN 26
+#define SCL_PIN 32
+#endif
+*/
+const double radToDeg = 180.0 / M_PI;
+const double msToKn = 3600.0 / 1852.0;
+const double kpaTommHg = 133.322387415;
+const double KToC = 273.15;
+//#define N2k_SPI_CS_PIN 53    // Pin for SPI select for mcp_can
+//#define N2k_CAN_INT_PIN 21   // Interrupt pin for mcp_can
+//#define USE_MCP_CAN_CLOCK_SET 8  // Uncomment this, if your mcp_can shield has 8MHz chrystal
+#define ESP32_CAN_TX_PIN GPIO_NUM_22 // Uncomment this and set right CAN TX pin definition, if you use ESP32 and do not have TX on default IO 16
+#define ESP32_CAN_RX_PIN GPIO_NUM_19 // Uncomment this and set right CAN RX pin definition, if you use ESP32 and do not have RX on default IO 4
+//#define NMEA2000_ARDUINO_DUE_CAN_BUS tNMEA2000_due::CANDevice1    // Uncomment this, if you want to use CAN bus 1 instead of 0 for Arduino DUE
 
-// CAN BUS
-#define ESP32_CAN_TX_PIN GPIO_NUM_17  //TX2 Set CAN TX GPIO15 =  D8
-#define ESP32_CAN_RX_PIN GPIO_NUM_16  //RX2 Set CAN RX GPIO13 =  D7
+#ifdef ENVSENSOR
+#include <M5StickC.h>
+#include "M5_ENV.h"
 
-#define LED 5    // builtin LED GPIO05
-//#define SWITCH 19   // ON/Off Switch for WIFI ~GPIO19
-int buttonState = 0;         // variable for reading the pushbutton status
-
-
-#endif // CONFIG_H
+SHT3X sht30;
+QMP6988 qmp6988;
+float tmp = 20.0;
+float hum = 50.0;
+float pres = 755.0;
+#define ENVINTERVAL 10000     // Interval in milliseconds
+#define STOREINTERVAL 60000 // store env data in SPIFFS ones/hour
+#endif
+#define UDPINTERVAL 1000 // ignore UDP received within 1 second
