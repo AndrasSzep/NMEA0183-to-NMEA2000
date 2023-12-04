@@ -1,2 +1,2 @@
-const String myssid        = "1114297_Trooli.uk";
-const String mypassword    = "aZRkOKpL";
+const String myssid        = "your ssid";
+const String mypassword    = "your pwd";
